@@ -112,7 +112,6 @@
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            /* Lacivertten saydama geçiş */
             background: linear-gradient(90deg, #0f172a 0%, rgba(15, 23, 42, 0.9) 40%, rgba(15, 23, 42, 0) 100%);
             z-index: 1;
         }
@@ -124,130 +123,184 @@
             background: rgba(255,255,255,0.98); z-index: 100;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+
+        /* Mobil Menu Animasyonları */
+        #mobile-sidebar-overlay { transition: opacity 0.3s ease; }
+        #mobile-sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="flex items-center justify-center h-screen w-full p-4 overflow-hidden">
+<body class="flex flex-col lg:flex-row h-screen w-full overflow-hidden">
 
+    <!-- Dinamik Yükleyici -->
     <div id="loader" class="loading-overlay">
         <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
         <p class="font-bold text-gray-600 tracking-widest uppercase text-[10px]">İçerikler Senkronize Ediliyor...</p>
     </div>
 
-    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-[1500px] h-[95vh] flex overflow-hidden border border-gray-100">
-        
-        <!-- SIDEBAR -->
-        <aside class="w-[300px] border-r border-gray-100 flex flex-col justify-between py-10 px-6 bg-white shrink-0 z-10 overflow-y-auto text-gray-900">
-            <div>
-                <div class="px-2 mb-6 cursor-pointer" onclick="backToHome()">
+    <!-- Mobil Üst Header (Sadece Mobilde Görünür) -->
+    <header class="lg:hidden flex items-center justify-between px-5 py-4 bg-white border-b border-gray-100 z-40 shrink-0">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="backToHome()">
+            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                <i class="ph-fill ph-lightning text-xl"></i>
+            </div>
+            <h1 class="text-xl font-black tracking-tighter text-blue-600 leading-none">SporProBülten</h1>
+        </div>
+        <button onclick="toggleMobileMenu(true)" class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 text-gray-600 active:bg-gray-100">
+            <i class="ph-bold ph-list text-2xl"></i>
+        </button>
+    </header>
+
+    <!-- Mobil Sidebar Overlay -->
+    <div id="mobile-sidebar-overlay" onclick="toggleMobileMenu(false)" class="fixed inset-0 bg-black/50 z-50 opacity-0 pointer-events-none lg:hidden"></div>
+
+    <!-- SIDEBAR (Masaüstünde yan, mobilde drawer) -->
+    <aside id="mobile-sidebar" class="fixed inset-y-0 left-0 z-[60] w-[280px] bg-white transform -translate-x-full lg:translate-x-0 lg:static lg:inset-auto lg:flex lg:flex-col lg:w-[300px] lg:border-r border-gray-100 py-10 px-6 shrink-0 overflow-y-auto text-gray-900 shadow-2xl lg:shadow-none">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between lg:block mb-6">
+                <div class="px-2 cursor-pointer" onclick="backToHome(); toggleMobileMenu(false);">
                     <h1 class="text-3xl font-black tracking-tighter text-blue-600 leading-none">SporProBülten</h1>
                 </div>
-
-                <div class="mb-5 w-full h-80 overflow-hidden rounded-[2rem] shadow-sm border border-gray-100 bg-gray-50 flex items-center justify-center">
-                    <img src="https://lh3.googleusercontent.com/d/1wo3zKSvzRPblatJej4aKg-yppZRMfFaV" alt="Profil" class="w-full h-full object-cover">
-                </div>
-
-                <div class="px-2 mb-5 text-center lg:text-left">
-                    <h2 class="text-gray-900 font-bold text-sm leading-tight mb-1 uppercase tracking-tight">Kürşat Buğra Karaoğlan</h2>
-                    <p class="text-gray-500 text-[11px] font-medium leading-relaxed mb-3">
-                        Beden Eğitimi ve Spor Öğretmeni <br> Sosyal Medya İçerik Yöneticisi
-                    </p>
-                    <div class="flex items-center justify-center lg:justify-start gap-3">
-                        <a href="https://instagram.com/bedenegitimi" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 transition-all"><i class="ph-bold ph-instagram-logo text-xl"></i></a>
-                        <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-green-600 transition-all"><i class="ph-bold ph-whatsapp-logo text-xl"></i></a>
-                    </div>
-                </div>
-
-                <div class="px-1 mb-8">
-                    <a href="https://buymeacoffee.com/bedenegitimi" target="_blank" class="coffee-btn flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-[#5F370E] font-black text-sm transition-all duration-300">
-                        <i class="ph-fill ph-coffee text-xl animate-bounce"></i>
-                        <span>Bana Kahve Ismarla</span>
-                    </a>
-                </div>
-
-                <nav id="nav-menu" class="space-y-1">
-                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-2">MENÜ</div>
-                    <a href="#" onclick="backToHome()" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 text-blue-600 font-bold transition-all">
-                        <i class="ph-fill ph-squares-four text-xl"></i> Ana Sayfa
-                    </a>
-                </nav>
+                <button onclick="toggleMobileMenu(false)" class="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
             </div>
-        </aside>
 
-        <!-- MAIN PANEL -->
-        <div class="flex-1 flex flex-col h-full bg-[#FAFBFF] overflow-hidden text-gray-900">
-            <header class="h-[80px] flex items-center justify-between px-8 bg-white shrink-0 border-b border-gray-100 z-10">
-                <div class="relative w-[400px]">
-                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
-                    <input type="text" id="main-search" placeholder="İçeriklerde ara..." class="w-full bg-[#F3F6F9] text-sm text-gray-700 rounded-xl pl-11 pr-4 py-3 outline-none transition-all border-none">
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right hidden sm:block leading-tight">
-                        <p id="sync-status" class="text-sm font-bold text-gray-800 uppercase tracking-tighter">Bağlantı Hazır</p>
-                        <p class="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Lacivert Tema Aktif</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg uppercase text-xs">SP</div>
-                </div>
-            </header>
+            <!-- Profil Görseli -->
+            <div class="mb-5 w-full h-64 lg:h-80 overflow-hidden rounded-[2rem] shadow-sm border border-gray-100 bg-gray-50 flex items-center justify-center">
+                <img src="https://lh3.googleusercontent.com/d/1wo3zKSvzRPblatJej4aKg-yppZRMfFaV" alt="Profil" class="w-full h-full object-cover">
+            </div>
 
-            <main id="home-view" class="flex-1 overflow-y-auto p-8 view-animate">
-                <!-- BANNER: ÖNE ÇIKANLAR (Lacivert Tema) -->
-                <section class="mb-12">
-                    <div class="hero-banner rounded-[2.5rem] p-10 relative shadow-2xl border border-white/5">
-                        <div class="relative z-10">
-                            <div class="flex items-center gap-3 mb-8 text-white">
-                                <span class="px-3 py-1 bg-blue-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest animate-pulse">GÜNCEL</span>
-                                <h2 class="text-3xl font-black tracking-tighter uppercase">Öne Çıkan Eğitimler</h2>
-                            </div>
-                            <div id="banner-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <!-- Dinamik Kartlar -->
-                            </div>
+            <!-- Biyografi -->
+            <div class="px-2 mb-5 text-center lg:text-left">
+                <h2 class="text-gray-900 font-bold text-sm leading-tight mb-1 uppercase tracking-tight">Kürşat Buğra Karaoğlan</h2>
+                <p class="text-gray-500 text-[11px] font-medium leading-relaxed mb-3">
+                    Beden Eğitimi ve Spor Öğretmeni <br> Sosyal Medya İçerik Yöneticisi
+                </p>
+                <div class="flex items-center justify-center lg:justify-start gap-3">
+                    <a href="https://instagram.com/bedenegitimi" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 transition-all"><i class="ph-bold ph-instagram-logo text-xl"></i></a>
+                    <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-green-600 transition-all"><i class="ph-bold ph-whatsapp-logo text-xl"></i></a>
+                </div>
+            </div>
+
+            <div class="px-1 mb-8">
+                <a href="https://buymeacoffee.com/bedenegitimi" target="_blank" class="coffee-btn flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-[#5F370E] font-black text-sm transition-all duration-300">
+                    <i class="ph-fill ph-coffee text-xl animate-bounce"></i>
+                    <span>Bana Kahve Ismarla</span>
+                </a>
+            </div>
+
+            <nav id="nav-menu" class="space-y-1 flex-1">
+                <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-2">MENÜ</div>
+                <a href="#" onclick="backToHome(); toggleMobileMenu(false);" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 text-blue-600 font-bold transition-all">
+                    <i class="ph-fill ph-squares-four text-xl"></i> Ana Sayfa
+                </a>
+                <!-- Dinamik Kategoriler -->
+            </nav>
+        </div>
+    </aside>
+
+    <!-- ANA İÇERİK PANELİ -->
+    <div class="flex-1 flex flex-col h-full bg-[#FAFBFF] overflow-hidden text-gray-900">
+        
+        <!-- Masaüstü Header (Mobilde gizli kalabilir veya küçültülebilir) -->
+        <header class="hidden lg:flex h-[80px] items-center justify-between px-8 bg-white shrink-0 border-b border-gray-100 z-10">
+            <div class="relative w-[400px]">
+                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                <input type="text" id="main-search" placeholder="İçeriklerde ara..." class="w-full bg-[#F3F6F9] text-sm text-gray-700 rounded-xl pl-11 pr-4 py-3 outline-none transition-all border-none">
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right leading-tight">
+                    <p id="sync-status" class="text-sm font-bold text-gray-800 uppercase tracking-tighter">Bağlantı Hazır</p>
+                    <p class="text-[10px] text-green-500 font-bold uppercase tracking-widest">Dinamik Akış Aktif</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg uppercase text-xs">SP</div>
+            </div>
+        </header>
+
+        <!-- Mobil Arama (Sadece Mobilde Üstte Görünür) -->
+        <div class="lg:hidden px-5 py-3 bg-white border-b border-gray-50">
+            <div class="relative w-full">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="mobile-search" placeholder="Bülten ara..." class="w-full bg-gray-50 text-sm py-2.5 pl-9 pr-4 rounded-xl outline-none border border-gray-100 focus:border-blue-300">
+            </div>
+        </div>
+
+        <main id="home-view" class="flex-1 overflow-y-auto p-5 lg:p-8 view-animate">
+            <!-- BANNER: ÖNE ÇIKANLAR -->
+            <section class="mb-10 lg:mb-12">
+                <div class="hero-banner rounded-[2rem] lg:rounded-[2.5rem] p-6 lg:p-10 relative shadow-2xl border border-white/5">
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-2 mb-6 text-white">
+                            <span class="px-2.5 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full uppercase tracking-widest animate-pulse">GÜNCEL</span>
+                            <h2 class="text-xl lg:text-3xl font-black tracking-tighter uppercase">Öne Çıkanlar</h2>
+                        </div>
+                        <div id="banner-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+                            <!-- Dinamik Kartlar -->
                         </div>
                     </div>
-                </section>
-
-                <!-- KULÜPLER -->
-                <section class="mb-12">
-                    <div class="section-header-line mb-6"><h2 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Sevdiğim Spor Kulüpleri</h2></div>
-                    <div id="clubs-grid" class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-6 text-center"></div>
-                </section>
-
-                <!-- KATEGORİ ÖNİZLEMELERİ -->
-                <div id="sections-container" class="space-y-12"></div>
-            </main>
-
-            <!-- Grid Görünümü -->
-            <main id="grid-view" class="flex-1 overflow-y-auto p-8 hidden-view view-animate text-gray-900">
-                <div class="max-w-6xl mx-auto">
-                    <button onclick="backToHome()" class="flex items-center gap-2 text-gray-400 hover:text-blue-600 font-bold text-xs mb-6 transition-colors uppercase tracking-widest">
-                        <i class="ph ph-arrow-left"></i> Ana Sayfaya Dön
-                    </button>
-                    <div class="flex items-center justify-between mb-8">
-                        <h2 id="category-title" class="text-3xl font-black text-gray-900 tracking-tight uppercase">Katalog</h2>
-                        <span id="cat-count" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest">0 KART</span>
-                    </div>
-                    <div id="full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
                 </div>
-            </main>
+            </section>
 
-            <!-- Detay Görünümü -->
-            <main id="single-view" class="flex-1 overflow-y-auto p-8 hidden-view view-animate bg-white text-center">
-                <div class="max-w-5xl mx-auto h-full flex flex-col items-center">
-                    <div class="w-full flex justify-start mb-8">
-                        <button onclick="backToPrevious()" class="flex items-center gap-2 text-gray-400 hover:text-blue-600 font-bold text-xs tracking-widest uppercase"><i class="ph ph-arrow-left text-xl mr-1"></i> Geri Dön</button>
-                    </div>
-                    <div class="w-full md:w-[600px] aspect-[210/297] bg-white rounded-[2rem] border border-gray-100 shadow-2xl overflow-hidden flex items-center justify-center p-4 mb-10">
-                        <div id="single-img-container" class="w-full h-full flex items-center justify-center"></div>
-                    </div>
-                    <button id="whatsapp-share-btn" class="whatsapp-share-btn flex items-center gap-3 px-10 py-5 rounded-2xl text-white font-black text-sm shadow-xl active:scale-95 transition-all">
-                        <i id="share-icon" class="ph-fill ph-whatsapp-logo text-3xl"></i>
-                        <span id="share-text" class="tracking-wider uppercase font-extrabold text-white">BU BÜLTENİ WHATSAPP'TA PAYLAŞ</span>
-                    </button>
+            <!-- KULÜPLER -->
+            <section class="mb-10 lg:mb-12">
+                <div class="section-header-line mb-6"><h2 class="text-xl lg:text-2xl font-black text-gray-900 tracking-tight uppercase">Kulüp Logoları</h2></div>
+                <div id="clubs-grid" class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 lg:gap-6 text-center"></div>
+            </section>
+
+            <!-- KATEGORİ ÖNİZLEMELERİ -->
+            <div id="sections-container" class="space-y-10 lg:space-y-12 pb-10"></div>
+        </main>
+
+        <!-- Grid Görünümü -->
+        <main id="grid-view" class="flex-1 overflow-y-auto p-5 lg:p-8 hidden-view view-animate text-gray-900">
+            <div class="max-w-6xl mx-auto">
+                <button onclick="backToHome()" class="flex items-center gap-2 text-gray-400 hover:text-blue-600 font-bold text-xs mb-6 transition-colors uppercase tracking-widest">
+                    <i class="ph ph-arrow-left"></i> Ana Sayfaya Dön
+                </button>
+                <div class="flex items-center justify-between mb-8">
+                    <h2 id="category-title" class="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight uppercase">Katalog</h2>
+                    <span id="cat-count" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest">0 KART</span>
                 </div>
-            </main>
-        </div>
+                <div id="full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6"></div>
+            </div>
+        </main>
+
+        <!-- Detay Görünümü -->
+        <main id="single-view" class="flex-1 overflow-y-auto p-5 lg:p-8 hidden-view view-animate bg-white text-center">
+            <div class="max-w-5xl mx-auto h-full flex flex-col items-center">
+                <div class="w-full flex justify-start mb-6 lg:mb-8">
+                    <button onclick="backToPrevious()" class="flex items-center gap-2 text-gray-400 hover:text-blue-600 font-bold text-xs tracking-widest uppercase"><i class="ph ph-arrow-left text-xl mr-1"></i> Geri Dön</button>
+                </div>
+                <div class="w-full md:w-[600px] aspect-[210/297] bg-white rounded-[2rem] border border-gray-100 shadow-2xl overflow-hidden flex items-center justify-center p-3 lg:p-4 mb-8 lg:mb-10">
+                    <div id="single-img-container" class="w-full h-full flex items-center justify-center"></div>
+                </div>
+                <button id="whatsapp-share-btn" class="whatsapp-share-btn flex items-center gap-3 px-8 lg:px-10 py-4 lg:py-5 rounded-2xl text-white font-black text-sm shadow-xl active:scale-95 transition-all">
+                    <i id="share-icon" class="ph-fill ph-whatsapp-logo text-2xl lg:text-3xl"></i>
+                    <span id="share-text" class="tracking-wider uppercase font-extrabold text-white text-xs lg:text-base">BU BÜLTENİ WHATSAPP'TA PAYLAŞ</span>
+                </button>
+            </div>
+        </main>
     </div>
 
     <script>
+        /**
+         * MOBİL MENU YÖNETİMİ
+         */
+        function toggleMobileMenu(isOpen) {
+            const sidebar = document.getElementById('mobile-sidebar');
+            const overlay = document.getElementById('mobile-sidebar-overlay');
+            
+            if (isOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                overlay.classList.add('opacity-100', 'pointer-events-auto');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                overlay.classList.remove('opacity-100', 'pointer-events-auto');
+            }
+        }
+
         /**
          * AKILLI VERİ SİSTEMİ
          */
@@ -315,10 +368,10 @@
             const clubsGrid = document.getElementById('clubs-grid');
             clubsGrid.innerHTML = dataStore.clubs.map(c => `
                 <div class="group cursor-pointer flex flex-col items-center">
-                    <div class="rounded-frame p-3 border-2 border-slate-200 hover:border-blue-500 transition-all w-24 h-24 shadow-sm bg-white">
+                    <div class="rounded-frame p-2 lg:p-3 border-2 border-slate-200 hover:border-blue-500 transition-all w-16 h-16 lg:w-24 lg:h-24 shadow-sm bg-white">
                         <img src="${resolveImg(c.id)}" class="w-full h-full object-contain">
                     </div>
-                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-2">${c.title}</p>
+                    <p class="text-[8px] lg:text-[9px] font-black text-slate-500 uppercase tracking-widest mt-2">${c.title}</p>
                 </div>
             `).join('');
 
@@ -339,21 +392,21 @@
                     const thumbUrl = getThumb(latest.link, 800);
                     
                     featuredHtml += `
-                        <div onclick="showSingleView('${latest.link}', '${latest.title}', '${latest.cat}')" class="featured-card p-6 rounded-[2.5rem] cursor-pointer flex flex-col justify-between h-60 group shadow-lg">
+                        <div onclick="showSingleView('${latest.link}', '${latest.title}', '${latest.cat}')" class="featured-card p-5 lg:p-6 rounded-[1.5rem] lg:rounded-[2.5rem] cursor-pointer flex flex-col justify-between h-48 lg:h-60 group shadow-lg">
                             <img src="${thumbUrl}" class="featured-img-bg" alt="Banner">
                             <div class="featured-overlay"></div>
                             <div class="featured-content flex flex-col h-full justify-between">
                                 <div class="flex justify-between items-start">
-                                    <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl shadow-lg flex items-center justify-center border border-white/20">
-                                        <i class="ph-fill ${target.icon} ${target.color} text-3xl group-hover:scale-125 transition-transform duration-500"></i>
+                                    <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl bg-white/10 backdrop-blur-xl shadow-lg flex items-center justify-center border border-white/20">
+                                        <i class="ph-fill ${target.icon} ${target.color} text-2xl lg:text-3xl group-hover:scale-125 transition-transform duration-500"></i>
                                     </div>
-                                    <span class="bg-blue-600/30 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black text-white tracking-widest uppercase border border-white/20">${target.label}</span>
+                                    <span class="bg-blue-600/30 backdrop-blur-md px-2 lg:px-3 py-1 rounded-full text-[8px] lg:text-[9px] font-black text-white tracking-widest uppercase border border-white/20">${target.label}</span>
                                 </div>
                                 <div>
                                     <div class="mt-3 flex items-center gap-2">
-                                        <span class="text-white text-[10px] font-black tracking-widest group-hover:text-blue-400 transition-colors uppercase">HEMEN İNCELE</span>
-                                        <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all">
-                                            <i class="ph ph-arrow-right text-white text-xs"></i>
+                                        <span class="text-white text-[9px] lg:text-[10px] font-black tracking-widest group-hover:text-blue-400 transition-colors uppercase">İncele</span>
+                                        <div class="w-6 h-6 lg:w-7 lg:h-7 rounded-full bg-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all">
+                                            <i class="ph ph-arrow-right text-white text-[10px]"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -366,7 +419,7 @@
 
             const menu = document.getElementById('nav-menu');
             const container = document.getElementById('sections-container');
-            menu.innerHTML = '<div class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">MENÜ</div><a href="#" onclick="backToHome()" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 text-blue-600 font-bold transition-all"><i class="ph-fill ph-squares-four text-xl"></i> Ana Sayfa</a>';
+            menu.innerHTML = '<div class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2 text-blue-600">MENÜ</div><a href="#" onclick="backToHome(); toggleMobileMenu(false);" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 text-blue-600 font-bold transition-all"><i class="ph-fill ph-squares-four text-xl"></i> Ana Sayfa</a>';
             container.innerHTML = '';
 
             Object.keys(dataStore.categories).forEach(catName => {
@@ -374,22 +427,22 @@
                 const link = document.createElement('a');
                 link.href = "#"; link.className = "flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition-all font-semibold";
                 link.innerHTML = `<i class="ph ph-folder text-xl"></i> ${catName}`;
-                link.onclick = (e) => { e.preventDefault(); showCategoryView(catName); };
+                link.onclick = (e) => { e.preventDefault(); showCategoryView(catName); toggleMobileMenu(false); };
                 menu.appendChild(link);
 
                 const section = document.createElement('section');
                 section.innerHTML = `
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="section-header-line"><h2 class="text-2xl font-black text-slate-800 tracking-tight uppercase">${catName}</h2></div>
-                        <button onclick="showCategoryView('${catName}')" class="text-blue-600 font-bold text-[10px] hover:underline uppercase tracking-widest">Tümünü Gör</button>
+                    <div class="flex items-center justify-between mb-4 lg:mb-6">
+                        <div class="section-header-line"><h2 class="text-lg lg:text-2xl font-black text-slate-800 tracking-tight uppercase">${catName}</h2></div>
+                        <button onclick="showCategoryView('${catName}')" class="text-blue-600 font-bold text-[9px] lg:text-[10px] hover:underline uppercase tracking-widest">Hepsini Gör</button>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
                         ${list.slice(0, 4).map((item, i) => `
                             <div onclick="showSingleView('${item.link}', '${item.title}', '${item.cat}')" class="flex flex-col group cursor-pointer relative view-animate">
-                                <div class="w-full aspect-[210/297] rounded-[2rem] overflow-hidden mb-3 border border-slate-200 p-2 bg-white img-container shadow-sm">
+                                <div class="w-full aspect-[210/297] rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-3 border border-slate-200 p-2 bg-white img-container shadow-sm">
                                     <img src="${getThumb(item.link)}" onload="this.classList.add('loaded');">
                                 </div>
-                                <p class="text-[11px] text-slate-400 font-black uppercase text-center lg:text-left tracking-widest leading-none">${item.cat}</p>
+                                <p class="text-[10px] lg:text-[11px] text-slate-400 font-black uppercase text-center lg:text-left tracking-widest leading-none">${item.cat}</p>
                             </div>
                         `).join('')}
                     </div>
@@ -407,12 +460,13 @@
             document.getElementById('cat-count').innerText = data.length + " KART";
             document.getElementById('full-grid').innerHTML = data.map((item, i) => `
                 <div onclick="showSingleView('${item.link}', '${item.title}', '${item.cat}')" class="flex flex-col group cursor-pointer relative view-animate">
-                    <div class="w-full aspect-[210/297] rounded-[2rem] overflow-hidden mb-3 border border-slate-200 p-2 bg-white img-container">
+                    <div class="w-full aspect-[210/297] rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-3 border border-slate-200 p-2 bg-white img-container">
                         <img src="${getThumb(item.link)}" onload="this.classList.add('loaded');">
                     </div>
-                    <p class="text-[11px] text-slate-400 font-black uppercase tracking-widest">${item.cat}</p>
+                    <p class="text-[10px] lg:text-[11px] text-slate-400 font-black uppercase tracking-widest">${item.cat}</p>
                 </div>
             `).join('');
+            document.querySelector('main').scrollTo(0,0);
         };
 
         let activeShare = { link: '', title: '' };
@@ -423,6 +477,7 @@
             activeShare = { link, title };
             const imgContainer = document.getElementById('single-img-container');
             imgContainer.innerHTML = `<img src="${resolveImg(link)}" class="max-w-full max-h-full object-contain loaded">`;
+            document.querySelector('main').scrollTo(0,0);
         };
 
         document.getElementById('whatsapp-share-btn').addEventListener('click', async () => {
@@ -433,13 +488,13 @@
 
             try {
                 btn.disabled = true;
-                txt.innerText = "GÖRSEL HAZIRLANIYOR...";
-                icon.className = "ph ph-circle-notched text-3xl animate-spin";
+                txt.innerText = "HAZIRLANIYOR...";
+                icon.className = "ph ph-circle-notched text-2xl animate-spin";
 
                 if (navigator.canShare && navigator.share) {
                     const response = await fetch(imgUrl);
                     const blob = await response.blob();
-                    const file = new File([blob], 'spor-pro-bulten.jpg', { type: 'image/jpeg' });
+                    const file = new File([blob], 'bulten.jpg', { type: 'image/jpeg' });
 
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
@@ -451,18 +506,15 @@
                         return;
                     }
                 }
-            } catch (err) {
-                console.log("Paylaşım hatası.");
-            }
+            } catch (err) { }
 
-            const text = `*SporProBülten - ${activeShare.title}*\nİncelemek için: ${imgUrl}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            window.open(`https://wa.me/?text=${encodeURIComponent('*SporProBülten - ' + activeShare.title + '*\n' + imgUrl)}`, '_blank');
             resetBtn();
 
             function resetBtn() {
                 btn.disabled = false;
                 txt.innerText = "BU BÜLTENİ WHATSAPP'TA PAYLAŞ";
-                icon.className = "ph-fill ph-whatsapp-logo text-3xl";
+                icon.className = "ph-fill ph-whatsapp-logo text-2xl lg:text-3xl";
             }
         });
 
@@ -478,6 +530,30 @@
                 document.getElementById('grid-view').classList.remove('hidden-view');
             } else backToHome();
         };
+
+        const handleSearch = (val) => {
+            if(val.length > 0) {
+                document.getElementById('home-view').classList.add('hidden-view');
+                document.getElementById('grid-view').classList.remove('hidden-view');
+                document.getElementById('category-title').innerText = "Arama Sonuçları";
+                let results = [];
+                Object.values(dataStore.categories).forEach(l => {
+                    results = results.concat(l.filter(b => b.cat.toLowerCase().includes(val.toLowerCase()) || b.title.toLowerCase().includes(val.toLowerCase())));
+                });
+                document.getElementById('cat-count').innerText = results.length + " SONUÇ";
+                document.getElementById('full-grid').innerHTML = results.map((item, i) => `
+                    <div onclick="showSingleView('${item.link}', '${item.title}', '${item.cat}')" class="flex flex-col group cursor-pointer relative view-animate">
+                        <div class="w-full aspect-[210/297] rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-3 border border-gray-100 p-2 bg-white img-container shadow-sm">
+                            <img src="${getThumb(item.link)}" onload="this.classList.add('loaded');">
+                        </div>
+                        <p class="text-[10px] lg:text-[11px] text-slate-400 font-black uppercase tracking-widest">${item.cat}</p>
+                    </div>
+                `).join('');
+            } else backToHome();
+        };
+
+        document.getElementById('main-search').addEventListener('input', (e) => handleSearch(e.target.value));
+        document.getElementById('mobile-search').addEventListener('input', (e) => handleSearch(e.target.value));
 
         window.onload = syncData;
     </script>
