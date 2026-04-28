@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SporProBülten Dashboard</title>
+    
+    <!-- Kaynaklar -->
+    <link rel="preconnect" href="https://lh3.googleusercontent.com">
+    <link rel="preconnect" href="https://drive.google.com">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F1F5F9; margin: 0; color: #1E293B; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+
+        .view-animate { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hidden-view { display: none !important; }
+
+        .shimmer {
+            background: #f6f7f8;
+            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background-repeat: no-repeat;
+            background-size: 800px 100%;
+            animation: placeholderShimmer 1.2s linear infinite;
+        }
+        @keyframes placeholderShimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
+
+        .img-container { 
+            background-color: #ffffff; 
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 2rem;
+        }
+        .img-container img { 
+            opacity: 0; 
+            transition: opacity 0.3s ease;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .img-container img.loaded { opacity: 1; }
+
+        .section-header-line { border-left: 4px solid #2563eb; padding-left: 1rem; }
+
+        .coffee-btn {
+            background: linear-gradient(135deg, #FFDD00 0%, #FBB03B 100%);
+            box-shadow: 0 4px 15px rgba(251, 176, 59, 0.2);
+        }
+        .coffee-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251, 176, 59, 0.3); }
+
+        .whatsapp-share-btn {
+            background-color: #25D366;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .rounded-frame {
+            border-radius: 9999px;
+            border: 2px solid #E2E8F0;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        /* Lacivert Gradyan Banner Teması */
+        .hero-banner {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .featured-card {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .featured-card:hover { 
+            transform: translateY(-8px); 
+            border-color: #3b82f6;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .featured-img-bg {
+            position: absolute;
+            top: 0; right: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+            z-index: 0;
+            transition: transform 0.8s ease;
+        }
+        .featured-card:hover .featured-img-bg {
+            transform: scale(1.1);
+        }
+        
+        .featured-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            /* Lacivertten saydama geçiş */
+            background: linear-gradient(90deg, #0f172a 0%, rgba(15, 23, 42, 0.9) 40%, rgba(15, 23, 42, 0) 100%);
+            z-index: 1;
+        }
+
+        .featured-content { position: relative; z-index: 10; pointer-events: none; }
+
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.98); z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center h-screen w-full p-4 overflow-hidden">
+
+    <div id="loader" class="loading-overlay">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="font-bold text-gray-600 tracking-widest uppercase text-[10px]">İçerikler Senkronize Ediliyor...</p>
+    </div>
+
+    <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-[1500px] h-[95vh] flex overflow-hidden border border-gray-100">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-[300px] border-r border-gray-100 flex flex-col justify-between py-10 px-6 bg-white shrink-0 z-10 overflow-y-auto text-gray-900">
+            <div>
+                <div class="px-2 mb-6 cursor-pointer" onclick="backToHome()">
+                    <h1 class="text-3xl font-black tracking-tighter text-blue-600 leading-none">SporProBülten</h1>
+                </div>
+
+                <div class="mb-5 w-full h-80 overflow-hidden rounded-[2rem] shadow-sm border border-gray-100 bg-gray-50 flex items-center justify-center">
+                    <img src="https://lh3.googleusercontent.com/d/1wo3zKSvzRPblatJej4aKg-yppZRMfFaV" alt="Profil" class="w-full h-full object-cover">
+                </div>
+
+                <div class="px-2 mb-5 text-center lg:text-left">
+                    <h2 class="text-gray-900 font-bold text-sm leading-tight mb-1 uppercase tracking-tight">Kürşat Buğra Karaoğlan</h2>
+                    <p class="text-gray-500 text-[11px] font-medium leading-relaxed mb-3">
+                        Beden Eğitimi ve Spor Öğretmeni <br> Sosyal Medya İçerik Yöneticisi
+                    </p>
+                    <div class="flex items-center justify-center lg:justify-start gap-3">
+                        <a href="https://instagram.com/bedenegitimi" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-blue-600 transition-all"><i class="ph-bold ph-instagram-logo text-xl"></i></a>
+                        <a href="#" class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:text-green-600 transition-all"><i class="ph-bold ph-whatsapp-logo text-xl"></i></a>
+                    </div>
+                </div>
+
+                <div class="px-1 mb-8">
+                    <a href="https://buymeacoffee.com/bedenegitimi" target="_blank" class="coffee-btn flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-[#5F370E] font-black text-sm transition-all duration-300">
+                        <i class="ph-fill ph-coffee text-xl animate-bounce"></i>
+                        <span>Bana Kahve Ismarla</span>
+                    </a>
+                </div>
+
+                <nav id="nav-menu" class="space-y-1">
+                    <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest px-3 mb-2">MENÜ</div>
+                    <a href="#" onclick="backToHome()" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 text-blue-600 font-bold transition-all">
+                        <i class="ph-fill ph-squares-four text-xl"></i> Ana Sayfa
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- MAIN PANEL -->
+        <div class="flex-1 flex flex-col h-full bg-[#FAFBFF] overflow-hidden text-gray-900">
+            <header class="h-[80px] flex items-center justify-between px-8 bg-white shrink-0 border-b border-gray-100 z-10">
+                <div class="relative w-[400px]">
+                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                    <input type="text" id="main-search" placeholder="İçeriklerde ara..." class="w-full bg-[#F3F6F9] text-sm text-gray-700 rounded-xl pl-11 pr-4 py-3 outline-none transition-all border-none">
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block leading-tight">
+                        <p id="sync-status" class="text-sm font-bold text-gray-800 uppercase tracking-tighter">Bağlantı Hazır</p>
+                        <p class="text-[10px] text-blue-500 font-bold uppercase tracking-widest">Lacivert Tema Aktif</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg uppercase text-xs">SP</div>
+                </div>
+            </header>
+
+            <main id="home-view" class="flex-1 overflow-y-auto p-8 view-animate">
+                <!-- BANNER: ÖNE ÇIKANLAR (Lacivert Tema) -->
+                <section class="mb-12">
+                    <div class="hero-banner rounded-[2.5rem] p-10 relative shadow-2xl border border-white/5">
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-8 text-white">
+                                <span class="px-3 py-1 bg-blue-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest animate-pulse">GÜNCEL</span>
+                                <h2 class="text-3xl font-black tracking-tighter uppercase">Öne Çıkan Eğitimler</h2>
+                            </div>
+                            <div id="banner-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Dinamik Kartlar -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- KULÜPLER -->
+                <section class="mb-12">
+                    <div class="section-header-line mb-6"><h2 class="text-2xl font-black text-gray-900 tracking-tight uppercase">Sevdiğim Spor Kulüpleri</h2></div>
+                    <div id="clubs-grid" class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-6 text-center"></div>
+                </section>
+
+                <!-- KATEGORİ ÖNİZLEMELERİ -->
+                <div id="sections-container" class="space-y-12"></div>
+            </main>
+
+            <!-- Grid Görünümü -->
+            <main id="grid-view" class="flex-1 overflow-y-auto p-8 hidden-view view-animate text-gray-900">
+                <div class="max-w-6xl mx-auto">
+                    <button onclick="backToHome()" class="flex items-center gap-2 text-gray-400 hover:text-blue-600 font-bold text-xs mb-6 transition-colors uppercase tracking-widest">
+                        <i class="ph ph-arrow-left"></i> Ana Sayfaya Dön
+                    </button>
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 id="category-title" class="text-3xl font-black text-gray-900 tracking-tight uppercase">Katalog</h2>
+                        <span id="cat-count" class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest">0 KART</span>
+                    </div>
+                    <div id="full-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+                </div>
+            </main>
+
+            <!-- Detay Görünümü -->
+            <main id="single-view" class="flex-1 overflow-y-auto p-8 hidden-view view-animate bg-white text-center">
+                <div class="max-w-5xl mx-auto h-full flex flex-col items-center">
+                    <div class="w-full flex justify-start mb-8">
+                        <button onclick="backToPrevious()" class="flex items-center gap-2 text-gray-400 hover:text-blue-600 font-bold text-xs tracking-widest uppercase"><i class="ph ph-arrow-left text-xl mr-1"></i> Geri Dön</button>
+                    </div>
+                    <div class="w-full md:w-[600px] aspect-[210/297] bg-white rounded-[2rem] border border-gray-100 shadow-2xl overflow-hidden flex items-center justify-center p-4 mb-10">
+                        <div id="single-img-container" class="w-full h-full flex items-center justify-center"></div>
+                    </div>
+                    <button id="whatsapp-share-btn" class="whatsapp-share-btn flex items-center gap-3 px-10 py-5 rounded-2xl text-white font-black text-sm shadow-xl active:scale-95 transition-all">
+                        <i id="share-icon" class="ph-fill ph-whatsapp-logo text-3xl"></i>
+                        <span id="share-text" class="tracking-wider uppercase font-extrabold text-white">BU BÜLTENİ WHATSAPP'TA PAYLAŞ</span>
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * AKILLI VERİ SİSTEMİ
+         */
+        const SPREADSHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlaVdYXNfYnIk4hCNnlwhFZRjYcbZPt-jC-5QJE1MBYF12JfmVlKF3JsgBdP3C22s3G35tsGzPCSx/pub?output=csv';
+
+        let dataStore = {
+            categories: {},
+            clubs: [
+                { id: "1TMVT_UAYo0jHy5B019I85sAwkUMsuRAG", title: "Dev İstanbul" },
+                { id: "1Qg99c02hVNV7Rwjs73cPQIXJwDXJrBq5", title: "Dev Adım" },
+                { id: "https://www.devatasehir.com/wp-content/uploads/2025/01/devatasehir-voleybol.png", title: "Dev Ataşehir" },
+                { id: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa25LwbGNN-KgN0URLQhZbEEbEFKpbUO_D2w&s", title: "Trend İstanbul" }
+            ]
+        };
+
+        const resolveImg = (link) => {
+            if (!link) return '';
+            let target = link.trim();
+            if (target.includes(': http')) target = 'http' + target.split(': http')[1].trim();
+            else if (target.includes(': https')) target = 'https' + target.split(': https')[1].trim();
+
+            const idMatch = target.match(/[-\w]{25,}/);
+            if (target.includes('drive.google.com') && idMatch) return `https://lh3.googleusercontent.com/d/${idMatch[0]}`;
+            if (target.length > 20 && !target.startsWith('http')) return `https://lh3.googleusercontent.com/d/${target}`;
+            if (target.startsWith('http')) return target;
+            return target;
+        };
+
+        const getThumb = (link, size = 500) => {
+            const url = resolveImg(link);
+            if (url.includes('googleusercontent.com')) return url + "=s" + size;
+            return url;
+        };
+
+        async function syncData() {
+            try {
+                const response = await fetch(SPREADSHEET_CSV + '&cache=' + Date.now());
+                const csvData = await response.text();
+                const rows = csvData.split('\n').map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim()));
+                const headers = rows[0].map(h => h.toLowerCase());
+                const catIdx = headers.indexOf('kategori');
+                const linkIdx = headers.indexOf('jpg link') !== -1 ? headers.indexOf('jpg link') : headers.indexOf('link');
+                
+                dataStore.categories = {};
+                rows.slice(1).forEach(row => {
+                    const rawLink = row[linkIdx];
+                    if (!rawLink || rawLink === "" || rawLink === "jpg link") return;
+                    const item = {
+                        cat: row[catIdx]?.toUpperCase() || 'EĞİTİM',
+                        link: rawLink,
+                        title: 'Eğitim Bülteni'
+                    };
+                    if (!dataStore.categories[item.cat]) dataStore.categories[item.cat] = [];
+                    dataStore.categories[item.cat].push(item);
+                });
+                document.getElementById('loader').style.display = 'none';
+                renderUI();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('sync-status').innerText = "Hata!";
+            }
+        }
+
+        function renderUI() {
+            const clubsGrid = document.getElementById('clubs-grid');
+            clubsGrid.innerHTML = dataStore.clubs.map(c => `
+                <div class="group cursor-pointer flex flex-col items-center">
+                    <div class="rounded-frame p-3 border-2 border-slate-200 hover:border-blue-500 transition-all w-24 h-24 shadow-sm bg-white">
+                        <img src="${resolveImg(c.id)}" class="w-full h-full object-contain">
+                    </div>
+                    <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-2">${c.title}</p>
+                </div>
+            `).join('');
+
+            const bannerGrid = document.getElementById('banner-grid');
+            const targetBannerCats = [
+                { key: 'BASKETBOL', label: 'BASKETBOL', icon: 'ph-basketball', color: 'text-orange-400' },
+                { key: 'VOLEYBOL', label: 'VOLEYBOL', icon: 'ph-volleyball', color: 'text-blue-400' },
+                { key: 'SPOR', label: 'SPOR DÜNYASI', icon: 'ph-globe', color: 'text-green-400' }
+            ];
+            
+            let featuredHtml = '';
+            targetBannerCats.forEach(target => {
+                const foundKey = Object.keys(dataStore.categories).find(k => k.includes(target.key));
+                const list = foundKey ? dataStore.categories[foundKey] : null;
+
+                if(list && list.length > 0) {
+                    const latest = list[list.length - 1]; 
+                    const thumbUrl = getThumb(latest.link, 800);
+                    
+                    featuredHtml += `
+                        <div onclick="showSingleView('${latest.link}', '${latest.title}', '${latest.cat}')" class="featured-card p-6 rounded-[2.5rem] cursor-pointer flex flex-col justify-between h-60 group shadow-lg">
+                            <img src="${thumbUrl}" class="featured-img-bg" alt="Banner">
+                            <div class="featured-overlay"></div>
+                            <div class="featured-content flex flex-col h-full justify-between">
+                                <div class="flex justify-between items-start">
+                                    <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl shadow-lg flex items-center justify-center border border-white/20">
+                                        <i class="ph-fill ${target.icon} ${target.color} text-3xl group-hover:scale-125 transition-transform duration-500"></i>
+                                    </div>
+                                    <span class="bg-blue-600/30 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black text-white tracking-widest uppercase border border-white/20">${target.label}</span>
+                                </div>
+                                <div>
+                                    <div class="mt-3 flex items-center gap-2">
+                                        <span class="text-white text-[10px] font-black tracking-widest group-hover:text-blue-400 transition-colors uppercase">HEMEN İNCELE</span>
+                                        <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all">
+                                            <i class="ph ph-arrow-right text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            bannerGrid.innerHTML = featuredHtml;
+
+            const menu = document.getElementById('nav-menu');
+            const container = document.getElementById('sections-container');
+            menu.innerHTML = '<div class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-3 mb-2">MENÜ</div><a href="#" onclick="backToHome()" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-blue-50 text-blue-600 font-bold transition-all"><i class="ph-fill ph-squares-four text-xl"></i> Ana Sayfa</a>';
+            container.innerHTML = '';
+
+            Object.keys(dataStore.categories).forEach(catName => {
+                const list = dataStore.categories[catName];
+                const link = document.createElement('a');
+                link.href = "#"; link.className = "flex items-center gap-3 px-3 py-3 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-blue-600 transition-all font-semibold";
+                link.innerHTML = `<i class="ph ph-folder text-xl"></i> ${catName}`;
+                link.onclick = (e) => { e.preventDefault(); showCategoryView(catName); };
+                menu.appendChild(link);
+
+                const section = document.createElement('section');
+                section.innerHTML = `
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="section-header-line"><h2 class="text-2xl font-black text-slate-800 tracking-tight uppercase">${catName}</h2></div>
+                        <button onclick="showCategoryView('${catName}')" class="text-blue-600 font-bold text-[10px] hover:underline uppercase tracking-widest">Tümünü Gör</button>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        ${list.slice(0, 4).map((item, i) => `
+                            <div onclick="showSingleView('${item.link}', '${item.title}', '${item.cat}')" class="flex flex-col group cursor-pointer relative view-animate">
+                                <div class="w-full aspect-[210/297] rounded-[2rem] overflow-hidden mb-3 border border-slate-200 p-2 bg-white img-container shadow-sm">
+                                    <img src="${getThumb(item.link)}" onload="this.classList.add('loaded');">
+                                </div>
+                                <p class="text-[11px] text-slate-400 font-black uppercase text-center lg:text-left tracking-widest leading-none">${item.cat}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+        }
+
+        window.showCategoryView = (catName) => {
+            document.getElementById('home-view').classList.add('hidden-view');
+            document.getElementById('grid-view').classList.remove('hidden-view');
+            document.getElementById('single-view').classList.add('hidden-view');
+            document.getElementById('category-title').innerText = catName + " KATALOĞU";
+            const data = dataStore.categories[catName] || [];
+            document.getElementById('cat-count').innerText = data.length + " KART";
+            document.getElementById('full-grid').innerHTML = data.map((item, i) => `
+                <div onclick="showSingleView('${item.link}', '${item.title}', '${item.cat}')" class="flex flex-col group cursor-pointer relative view-animate">
+                    <div class="w-full aspect-[210/297] rounded-[2rem] overflow-hidden mb-3 border border-slate-200 p-2 bg-white img-container">
+                        <img src="${getThumb(item.link)}" onload="this.classList.add('loaded');">
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-black uppercase tracking-widest">${item.cat}</p>
+                </div>
+            `).join('');
+        };
+
+        let activeShare = { link: '', title: '' };
+        window.showSingleView = (link, title, cat) => {
+            document.getElementById('home-view').classList.add('hidden-view');
+            document.getElementById('grid-view').classList.add('hidden-view');
+            document.getElementById('single-view').classList.remove('hidden-view');
+            activeShare = { link, title };
+            const imgContainer = document.getElementById('single-img-container');
+            imgContainer.innerHTML = `<img src="${resolveImg(link)}" class="max-w-full max-h-full object-contain loaded">`;
+        };
+
+        document.getElementById('whatsapp-share-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('whatsapp-share-btn');
+            const icon = document.getElementById('share-icon');
+            const txt = document.getElementById('share-text');
+            const imgUrl = resolveImg(activeShare.link);
+
+            try {
+                btn.disabled = true;
+                txt.innerText = "GÖRSEL HAZIRLANIYOR...";
+                icon.className = "ph ph-circle-notched text-3xl animate-spin";
+
+                if (navigator.canShare && navigator.share) {
+                    const response = await fetch(imgUrl);
+                    const blob = await response.blob();
+                    const file = new File([blob], 'spor-pro-bulten.jpg', { type: 'image/jpeg' });
+
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'SporProBülten',
+                            text: 'SporProBülten - ' + activeShare.title
+                        });
+                        resetBtn();
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.log("Paylaşım hatası.");
+            }
+
+            const text = `*SporProBülten - ${activeShare.title}*\nİncelemek için: ${imgUrl}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            resetBtn();
+
+            function resetBtn() {
+                btn.disabled = false;
+                txt.innerText = "BU BÜLTENİ WHATSAPP'TA PAYLAŞ";
+                icon.className = "ph-fill ph-whatsapp-logo text-3xl";
+            }
+        });
+
+        window.backToHome = () => {
+            document.getElementById('single-view').classList.add('hidden-view');
+            document.getElementById('grid-view').classList.add('hidden-view');
+            document.getElementById('home-view').classList.remove('hidden-view');
+        };
+
+        window.backToPrevious = () => {
+            if(!document.getElementById('grid-view').classList.contains('hidden-view')) {
+                document.getElementById('single-view').classList.add('hidden-view');
+                document.getElementById('grid-view').classList.remove('hidden-view');
+            } else backToHome();
+        };
+
+        window.onload = syncData;
+    </script>
+</body>
+</html>
